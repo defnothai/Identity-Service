@@ -6,11 +6,10 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
-public class UserCreationRequest {
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class UserUpdateRequest {
 
-    String username;
     String password;
     String firstName;
     String lastName;

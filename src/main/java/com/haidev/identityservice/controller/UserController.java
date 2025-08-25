@@ -1,15 +1,15 @@
 package com.haidev.identityservice.controller;
 
 import com.haidev.identityservice.dto.request.UserCreationRequest;
+import com.haidev.identityservice.dto.request.UserUpdateRequest;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -22,6 +22,26 @@ public class UserController {
     @PostMapping
     public User createUser(@RequestBody UserCreationRequest request) {
         return userService.createUser(request);
+    }
+
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userService.getUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable("id") String id) {
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable("id") String id, @RequestBody UserUpdateRequest request) {
+        return userService.updateUser(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable("id") String id) {
+        userService.deleteUser(id);
     }
 
 }
