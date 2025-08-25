@@ -4,6 +4,7 @@ import com.haidev.identityservice.dto.request.UserCreationRequest;
 import com.haidev.identityservice.dto.request.UserUpdateRequest;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,7 +21,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public User createUser(@RequestBody UserCreationRequest request) {
+    public User createUser(@Valid @RequestBody UserCreationRequest request) {
         return userService.createUser(request);
     }
 
@@ -35,7 +36,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable("id") String id, @RequestBody UserUpdateRequest request) {
+    public User updateUser(@PathVariable("id") String id,
+                           @Valid @RequestBody UserUpdateRequest request) {
         return userService.updateUser(id, request);
     }
 
