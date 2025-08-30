@@ -3,6 +3,8 @@ package com.haidev.identityservice.service;
 import com.haidev.identityservice.dto.request.UserCreationRequest;
 import com.haidev.identityservice.dto.request.UserUpdateRequest;
 import com.haidev.identityservice.entity.User;
+import com.haidev.identityservice.exception.AppException;
+import com.haidev.identityservice.exception.ErrorCode;
 import com.haidev.identityservice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ public class UserService {
     public User createUser(UserCreationRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         User user = new User();

@@ -50,7 +50,7 @@ public class UserController {
                            @Valid @RequestBody UserUpdateRequest request) {
         return ApiResponse
                 .<User>builder()
-                .result(userService.getUserById(id))
+                .result(userService.updateUser(id, request))
                 .build();
     }
 
