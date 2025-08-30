@@ -3,6 +3,7 @@ package com.haidev.identityservice.controller;
 import com.haidev.identityservice.dto.request.UserCreationRequest;
 import com.haidev.identityservice.dto.request.UserUpdateRequest;
 import com.haidev.identityservice.dto.response.ApiResponse;
+import com.haidev.identityservice.dto.response.UserResponse;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.service.UserService;
 import jakarta.validation.Valid;
@@ -46,10 +47,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<User> updateUser(@PathVariable("id") String id,
-                           @Valid @RequestBody UserUpdateRequest request) {
+    public ApiResponse<UserResponse> updateUser(@PathVariable("id") String id,
+                                                @Valid @RequestBody UserUpdateRequest request) {
         return ApiResponse
-                .<User>builder()
+                .<UserResponse>builder()
                 .result(userService.updateUser(id, request))
                 .build();
     }

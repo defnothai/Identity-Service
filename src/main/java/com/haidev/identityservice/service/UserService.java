@@ -2,9 +2,11 @@ package com.haidev.identityservice.service;
 
 import com.haidev.identityservice.dto.request.UserCreationRequest;
 import com.haidev.identityservice.dto.request.UserUpdateRequest;
+import com.haidev.identityservice.dto.response.UserResponse;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.exception.AppException;
 import com.haidev.identityservice.exception.ErrorCode;
+import com.haidev.identityservice.mapper.UserMapper;
 import com.haidev.identityservice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +21,13 @@ import java.util.List;
 public class UserService {
 
     UserRepository userRepository;
+    UserMapper userMapper;
 
     public User createUser(UserCreationRequest request) {
-
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
-        return userRepository.save(user);
+        return userRepository.save(userMapper.toUser(request));
     }
 
     public List<User> getUsers() {
@@ -45,13 +40,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public User updateUser(String id, UserUpdateRequest request) {
+    public UserResponse updateUser(String id, UserUpdateRequest request) {
         User user = getUserById(id);
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
-        return userRepository.save(user);
+        userMapper.updateUser(request, user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public void deleteUser(String id) {
