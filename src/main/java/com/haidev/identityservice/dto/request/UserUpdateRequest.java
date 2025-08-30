@@ -13,14 +13,14 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserUpdateRequest {
 
-    @Size(min = 8, message = "Username must be at least 8 characters long")
+    @Size(min = 8, message = "PASSWORD_INVALID")
     String password;
-    @Size(min = 3, message = "First name must be at least 3 characters long")
+    @Size(min = 3, message = "FIRSTNAME_INVALID")
     String firstName;
-    @Size(min = 3, message = "Last name must be at least 3 characters long")
+    @Size(min = 3, message = "LASTNAME_INVALID")
     String lastName;
-    @NotNull(message = "Date of birth is required")
-    @Past(message = "Date of birth must be in the past")
+    @NotNull(message = "DOB_NOT_NULL")
+    @Past(message = "DOB_INVALID")
     LocalDate dob;
 
 }
