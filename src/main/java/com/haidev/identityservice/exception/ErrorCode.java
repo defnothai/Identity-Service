@@ -17,7 +17,9 @@ public enum ErrorCode {
     FIRSTNAME_INVALID(1004, "First name must be at least 3 characters long"),
     LASTNAME_INVALID(1005, "Last name must be at least 3 characters long"),
     DOB_INVALID(1006, "Date of birth must be in the past"),
-    DOB_NOT_NULL(1007, "Date of birth is required");
+    DOB_NOT_NULL(1007, "Date of birth is required"),
+    USER_NOT_EXISTED(1009, "User not existed"),
+    UNAUTHENTICATED(1010, "Unauthenticated");
 
     int code;
     String message;
