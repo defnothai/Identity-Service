@@ -90,11 +90,14 @@ public class AuthenticationService {
                                 throws JOSEException, ParseException {
         var token = request.getToken();
 
+        // MACVerifier là class của Nimbus để verify Token mà ký bằng HMAC
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+        // từ token chuyển thành object để dễ xử lý
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
+        // lấy header + payload trong JWT, chạy qua thuật toán (ví dụ HS256 = HMAC-SHA256) cùng với secret key.
+        //Sau đó so sánh kết quả hash đó với signature có sẵn trong token.
         var verified = signedJWT.verify(verifier);
 
         return IntrospectResponse.builder()
