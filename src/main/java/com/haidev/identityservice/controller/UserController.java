@@ -23,9 +23,9 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ApiResponse<User> createUser(@Valid @RequestBody UserCreationRequest request) {
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreationRequest request) {
         return ApiResponse
-                .<User>builder()
+                .<UserResponse>builder()
                 .result(userService.createUser(request))
                 .build();
     }
@@ -39,9 +39,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<User> getUserById(@PathVariable("id") String id) {
+    public ApiResponse<UserResponse> getUserById(@PathVariable("id") String id) {
         return ApiResponse
-                .<User>builder()
+                .<UserResponse>builder()
                 .result(userService.getUserById(id))
                 .build();
     }
