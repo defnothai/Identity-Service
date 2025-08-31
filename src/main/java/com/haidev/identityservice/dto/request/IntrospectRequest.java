@@ -1,7 +1,7 @@
-package com.haidev.identityservice.dto.response;
-
+package com.haidev.identityservice.dto.request;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -9,9 +9,9 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class AuthenticationResponse {
+@AllArgsConstructor
+public class IntrospectRequest {
 
-    boolean authenticated;
     String token;
 
 }
