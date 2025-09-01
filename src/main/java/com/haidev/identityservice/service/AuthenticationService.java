@@ -4,6 +4,7 @@ import com.haidev.identityservice.dto.request.AuthenticationRequest;
 import com.haidev.identityservice.dto.request.IntrospectRequest;
 import com.haidev.identityservice.dto.response.AuthenticationResponse;
 import com.haidev.identityservice.dto.response.IntrospectResponse;
+import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.exception.AppException;
 import com.haidev.identityservice.exception.ErrorCode;
 import com.haidev.identityservice.repository.UserRepository;
@@ -26,6 +27,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -34,6 +36,7 @@ import java.util.Date;
 public class AuthenticationService {
 
     UserRepository userRepository;
+    PasswordEncoder passwordEncoder;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -42,13 +45,12 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        var token = generateToken(request.getUsername());
+        var token = generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -56,19 +58,19 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String username) {
+    private String generateToken(User user) {
         // header chứa thông tin thuật toán dùng để hash
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         // payload chứa nội dung thông tin gửi đi (claim set) trong token: subject username, userid, ...
         // có thể gọi là payload thô
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("haidev.com")  // định danh ai là người tạo token
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("customClaim", "Custom")
+                .claim("scope", buildScope(user))
                 .build();
         // từ claim set thành json object và bọc thành object Payload theo định dạng mà JWSObject yêu cầu
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -84,6 +86,14 @@ public class AuthenticationService {
             log.error("Error when generate token", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+    }
+
+    private String buildScope(User user) {
+        StringJoiner joiner = new StringJoiner(" ");
+        if (!user.getRoles().isEmpty()) {
+            user.getRoles().forEach(joiner::add);
+        }
+        return joiner.toString();
     }
 
     public IntrospectResponse introspect(IntrospectRequest request)

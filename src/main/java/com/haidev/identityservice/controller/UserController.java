@@ -10,10 +10,15 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -30,10 +35,18 @@ public class UserController {
                 .build();
     }
 
+
     @GetMapping
-    public ApiResponse<List<User>> getAllUsers() {
+    public ApiResponse<List<UserResponse>> getAllUsers() {
+        log.info("Get all users");
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("User: {}", authentication.getName());
+        authentication.getAuthorities().forEach(a -> log.info("Role: {}", a.getAuthority()));
+        log.info("Roles: {}", authentication.getAuthorities());
+
         return ApiResponse
-                .<List<User>>builder()
+                .<List<UserResponse>>builder()
                 .result(userService.getUsers())
                 .build();
     }
@@ -60,6 +73,14 @@ public class UserController {
         userService.deleteUser(id);
         return ApiResponse
                 .<User>builder()
+                .build();
+    }
+
+    @GetMapping("/my-info")
+    public ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse
+                .<UserResponse>builder()
+                .result(userService.getMyInfo())
                 .build();
     }
 
