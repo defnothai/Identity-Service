@@ -4,25 +4,31 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
 
-    USER_EXISTED(1001, "User already exists"),
-    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception"),
-    USERNAME_INVALID(1002, "Username must be at least 3 characters long"),
-    PASSWORD_INVALID(1003, "Password must be at least 8 characters long"),
-    FIRSTNAME_INVALID(1004, "First name must be at least 3 characters long"),
-    LASTNAME_INVALID(1005, "Last name must be at least 3 characters long"),
-    DOB_INVALID(1006, "Date of birth must be in the past"),
-    DOB_NOT_NULL(1007, "Date of birth is required"),
-    USER_NOT_EXISTED(1009, "User not existed"),
-    UNAUTHENTICATED(1010, "Unauthenticated");
+    USER_EXISTED(1001, "User already exists", HttpStatus.BAD_REQUEST),
+    USERNAME_INVALID(1002, "Username must be at least 3 characters long", HttpStatus.BAD_REQUEST),
+    PASSWORD_INVALID(1003, "Password must be at least 8 characters long", HttpStatus.BAD_REQUEST),
+    FIRSTNAME_INVALID(1004, "First name must be at least 3 characters long", HttpStatus.BAD_REQUEST),
+    LASTNAME_INVALID(1005, "Last name must be at least 3 characters long", HttpStatus.BAD_REQUEST),
+    DOB_INVALID(1006, "Date of birth must be in the past", HttpStatus.BAD_REQUEST),
+    DOB_NOT_NULL(1007, "Date of birth is required", HttpStatus.BAD_REQUEST),
+    USER_NOT_EXISTED(1009, "User not existed", HttpStatus.NOT_FOUND),
+    UNAUTHENTICATED(1010, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(1011, "You do not have permission", HttpStatus.FORBIDDEN),
+
+    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    ;
 
     int code;
     String message;
+    HttpStatus httpStatus;
 
 
 }
