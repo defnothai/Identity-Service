@@ -1,15 +1,15 @@
 package com.haidev.identityservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApiResponse <T> {
 
     @Builder.Default
