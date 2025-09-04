@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -22,5 +23,6 @@ public class UserUpdateRequest {
     @NotNull(message = "DOB_NOT_NULL")
     @Past(message = "DOB_INVALID")
     LocalDate dob;
+    List<String> roles;
 
 }

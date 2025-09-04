@@ -13,12 +13,11 @@ public interface UserMapper {
 
     User toUser(UserCreationRequest request);
 
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     void updateUser(UserUpdateRequest request, @MappingTarget User user);
 
-    // @Mapping(target = "firstName", ignore = true) // không map field lastname
-    @Mapping(source = "firstName", target = "lastName")
+    @Mapping(source = "firstName", target = "lastName") // chỉ định chi tiết
     UserResponse toUserResponse(User user);
-
-
 
 }
