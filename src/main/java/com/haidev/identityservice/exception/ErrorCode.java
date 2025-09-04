@@ -19,6 +19,7 @@ public enum ErrorCode {
     LASTNAME_INVALID(1005, "Last name must be at least 3 characters long", HttpStatus.BAD_REQUEST),
     DOB_INVALID(1006, "Date of birth must be in the past", HttpStatus.BAD_REQUEST),
     DOB_NOT_NULL(1007, "Date of birth is required", HttpStatus.BAD_REQUEST),
+    DOB_CONSTRAINT(1012, "Age must be larger or equal than 18", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1009, "User not existed", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1010, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1011, "You do not have permission", HttpStatus.FORBIDDEN),
