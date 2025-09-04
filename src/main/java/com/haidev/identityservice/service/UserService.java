@@ -1,7 +1,7 @@
 package com.haidev.identityservice.service;
 
-import com.haidev.identityservice.dto.request.UserCreationRequest;
-import com.haidev.identityservice.dto.request.UserUpdateRequest;
+import com.haidev.identityservice.dto.request.user.UserCreationRequest;
+import com.haidev.identityservice.dto.request.user.UserUpdateRequest;
 import com.haidev.identityservice.dto.response.UserResponse;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.enums.Role;
@@ -16,7 +16,6 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

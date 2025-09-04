@@ -1,7 +1,7 @@
 package com.haidev.identityservice.mapper;
 
-import com.haidev.identityservice.dto.request.UserCreationRequest;
-import com.haidev.identityservice.dto.request.UserUpdateRequest;
+import com.haidev.identityservice.dto.request.user.UserCreationRequest;
+import com.haidev.identityservice.dto.request.user.UserUpdateRequest;
 import com.haidev.identityservice.dto.response.UserResponse;
 import com.haidev.identityservice.entity.User;
 import org.mapstruct.Mapper;

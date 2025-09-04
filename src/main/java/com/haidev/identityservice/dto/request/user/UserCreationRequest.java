@@ -1,4 +1,4 @@
-package com.haidev.identityservice.dto.request;
+package com.haidev.identityservice.dto.request.user;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -9,10 +9,12 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserUpdateRequest {
+public class UserCreationRequest {
 
+    @Size(min = 3, message = "USERNAME_INVALID")
+    String username;
     @Size(min = 8, message = "PASSWORD_INVALID")
     String password;
     @Size(min = 3, message = "FIRSTNAME_INVALID")
