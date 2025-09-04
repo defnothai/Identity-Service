@@ -1,4 +1,4 @@
-package com.haidev.identityservice.dto.request;
+package com.haidev.identityservice.dto.request.authentication;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package com.haidev.identityservice.service;
 
-import com.haidev.identityservice.dto.request.AuthenticationRequest;
-import com.haidev.identityservice.dto.request.IntrospectRequest;
+import com.haidev.identityservice.dto.request.authentication.AuthenticationRequest;
+import com.haidev.identityservice.dto.request.authentication.IntrospectRequest;
 import com.haidev.identityservice.dto.response.AuthenticationResponse;
 import com.haidev.identityservice.dto.response.IntrospectResponse;
 import com.haidev.identityservice.entity.User;
@@ -19,7 +19,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,9 +89,9 @@ public class AuthenticationService {
 
     private String buildScope(User user) {
         StringJoiner joiner = new StringJoiner(" ");
-        if (!user.getRoles().isEmpty()) {
-            user.getRoles().forEach(joiner::add);
-        }
+//        if (!user.getRoles().isEmpty()) {
+//            user.getRoles().forEach(joiner::add);
+//        }
         return joiner.toString();
     }
 

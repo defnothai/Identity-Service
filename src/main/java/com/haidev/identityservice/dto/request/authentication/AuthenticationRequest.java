@@ -1,6 +1,5 @@
-package com.haidev.identityservice.dto.request;
+package com.haidev.identityservice.dto.request.authentication;
 
-import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;

@@ -1,7 +1,7 @@
 package com.haidev.identityservice.controller;
 
-import com.haidev.identityservice.dto.request.AuthenticationRequest;
-import com.haidev.identityservice.dto.request.IntrospectRequest;
+import com.haidev.identityservice.dto.request.authentication.AuthenticationRequest;
+import com.haidev.identityservice.dto.request.authentication.IntrospectRequest;
 import com.haidev.identityservice.dto.response.ApiResponse;
 import com.haidev.identityservice.dto.response.AuthenticationResponse;
 import com.haidev.identityservice.dto.response.IntrospectResponse;
