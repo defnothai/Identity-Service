@@ -3,6 +3,7 @@ package com.haidev.identityservice.service;
 import com.haidev.identityservice.dto.request.authentication.AuthenticationRequest;
 import com.haidev.identityservice.dto.request.authentication.IntrospectRequest;
 import com.haidev.identityservice.dto.request.authentication.LogoutRequest;
+import com.haidev.identityservice.dto.request.authentication.RefreshRequest;
 import com.haidev.identityservice.dto.response.AuthenticationResponse;
 import com.haidev.identityservice.dto.response.IntrospectResponse;
 import com.haidev.identityservice.entity.InvalidatedToken;
@@ -142,6 +143,30 @@ public class AuthenticationService {
         }
 
         return signedJWT;
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        SignedJWT signedJWT = verifyToken(request.getToken());
+        String jit = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken
+                                            .builder()
+                                            .id(jit)
+                                            .expiredAt(expirationTime)
+                                            .build();
+        invalidatedRepository.save(invalidatedToken);
+
+        String username = signedJWT.getJWTClaimsSet()
+                                   .getSubject();
+        User user = userRepository.findByUsername(username)
+                                  .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 
     public IntrospectResponse introspect(IntrospectRequest request)
