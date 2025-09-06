@@ -24,7 +24,7 @@ public class UserCreationRequest {
     String lastName;
     @NotNull(message = "DOB_NOT_NULL")
     @Past(message = "DOB_INVALID")
-    @DobConstraint(min = 18, message = "DOB_CONSTRAINT")
+    @DobConstraint(min = 16, message = "DOB_CONSTRAINT")
     LocalDate dob;
 
 }
