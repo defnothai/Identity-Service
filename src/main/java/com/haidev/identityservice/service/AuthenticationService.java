@@ -2,11 +2,14 @@ package com.haidev.identityservice.service;
 
 import com.haidev.identityservice.dto.request.authentication.AuthenticationRequest;
 import com.haidev.identityservice.dto.request.authentication.IntrospectRequest;
+import com.haidev.identityservice.dto.request.authentication.LogoutRequest;
 import com.haidev.identityservice.dto.response.AuthenticationResponse;
 import com.haidev.identityservice.dto.response.IntrospectResponse;
+import com.haidev.identityservice.entity.InvalidatedToken;
 import com.haidev.identityservice.entity.User;
 import com.haidev.identityservice.exception.AppException;
 import com.haidev.identityservice.exception.ErrorCode;
+import com.haidev.identityservice.repository.InvalidatedRepository;
 import com.haidev.identityservice.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -27,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -36,6 +40,7 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
+    InvalidatedRepository invalidatedRepository;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -69,6 +74,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
         // từ claim set thành json object và bọc thành object Payload theo định dạng mà JWSObject yêu cầu
@@ -102,9 +108,20 @@ public class AuthenticationService {
         return joiner.toString();
     }
 
-    public IntrospectResponse introspect(IntrospectRequest request)
-                                throws JOSEException, ParseException {
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
         var token = request.getToken();
+        SignedJWT signedJWT = verifyToken(token);
+        String jit = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken
+                                            .builder()
+                                            .id(jit)
+                                            .expiredAt(expirationTime)
+                                            .build();
+        invalidatedRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
 
         // MACVerifier là class của Nimbus để verify Token mà ký bằng HMAC
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
@@ -116,10 +133,31 @@ public class AuthenticationService {
         //Sau đó so sánh kết quả hash đó với signature có sẵn trong token.
         var verified = signedJWT.verify(verifier);
 
-        return IntrospectResponse.builder()
-                .isValid(verified && expirationTime.after(new Date()))
-                .build();
+        if (!verified || expirationTime.before(new Date())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
+        if (invalidatedRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        return signedJWT;
+    }
+
+    public IntrospectResponse introspect(IntrospectRequest request)
+                                throws JOSEException, ParseException {
+        String token = request.getToken();
+
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
+        return IntrospectResponse
+                .builder()
+                .isValid(isValid)
+                .build();
     }
 
 }
