@@ -46,6 +46,12 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.signerKey}")
     String SIGNER_KEY;
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    Long VALID_DURATION;
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    Long REFRESHABLE_DURATION;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername())
@@ -58,9 +64,9 @@ public class AuthenticationService {
         var token = generateToken(user);
 
         return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+                                    .token(token)
+                                    .authenticated(true)
+                                    .build();
     }
 
     private String generateToken(User user) {
@@ -73,7 +79,9 @@ public class AuthenticationService {
                 .issuer("haidev.com")  // định danh ai là người tạo token
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now()
+                                .plus(VALID_DURATION, ChronoUnit.SECONDS)
+                                .toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
@@ -111,25 +119,36 @@ public class AuthenticationService {
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         var token = request.getToken();
-        SignedJWT signedJWT = verifyToken(token);
-        String jit = signedJWT.getJWTClaimsSet().getJWTID();
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        InvalidatedToken invalidatedToken = InvalidatedToken
-                                            .builder()
-                                            .id(jit)
-                                            .expiredAt(expirationTime)
-                                            .build();
-        invalidatedRepository.save(invalidatedToken);
+        try {
+            SignedJWT signedJWT = verifyToken(token, true);
+            String jit = signedJWT.getJWTClaimsSet().getJWTID();
+            Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                                                                .id(jit)
+                                                                .expiredAt(expirationTime)
+                                                                .build();
+            invalidatedRepository.save(invalidatedToken);
+        } catch (AppException e) {  // token có hết hạn hay không thì vẫn logout được
+            log.info("Token expired");
+        }
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
 
         // MACVerifier là class của Nimbus để verify Token mà ký bằng HMAC
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
         // từ token chuyển thành object để dễ xử lý
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime = (isRefresh)
+                ? new Date(
+                        signedJWT.getJWTClaimsSet()
+                                .getIssueTime()
+                                .toInstant()
+                                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                                .toEpochMilli()
+                )
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
         // lấy header + payload trong JWT, chạy qua thuật toán (ví dụ HS256 = HMAC-SHA256) cùng với secret key.
         //Sau đó so sánh kết quả hash đó với signature có sẵn trong token.
         var verified = signedJWT.verify(verifier);
@@ -146,18 +165,16 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        SignedJWT signedJWT = verifyToken(request.getToken());
+        SignedJWT signedJWT = verifyToken(request.getToken(), true);
         String jit = signedJWT.getJWTClaimsSet().getJWTID();
         Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        InvalidatedToken invalidatedToken = InvalidatedToken
-                                            .builder()
-                                            .id(jit)
-                                            .expiredAt(expirationTime)
-                                            .build();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                                                            .id(jit)
+                                                            .expiredAt(expirationTime)
+                                                            .build();
         invalidatedRepository.save(invalidatedToken);
 
-        String username = signedJWT.getJWTClaimsSet()
-                                   .getSubject();
+        String username = signedJWT.getJWTClaimsSet().getSubject();
         User user = userRepository.findByUsername(username)
                                   .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -175,7 +192,7 @@ public class AuthenticationService {
 
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         } catch (AppException e) {
             isValid = false;
         }
