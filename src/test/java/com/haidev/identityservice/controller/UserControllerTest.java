@@ -9,13 +9,17 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -26,14 +30,21 @@ import java.time.LocalDate;
 @Slf4j
 @AutoConfigureMockMvc   // cho phép dùng MockMvc để giả lập request đến api
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@TestPropertySource("/test.properties")
+@ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
 
     final static String BASE_URL = "/api/users";
 
     @Autowired
     MockMvc mockMvc;    // công cụ để giả lập request HTTP (GET, POST,...) đến controller.
+
     @Mock
     UserService userService;  // tạo mock cho service
+
+    @InjectMocks
+    UserController userController;
+
     UserCreationRequest request;
     UserResponse response;
 
@@ -54,6 +65,7 @@ public class UserControllerTest {
                                 .lastName("Doe")
                                 .dob(dob)
                                 .build();
+
     }
 
     @Test
