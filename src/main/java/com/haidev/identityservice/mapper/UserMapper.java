@@ -1,12 +1,13 @@
 package com.haidev.identityservice.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
 import com.haidev.identityservice.dto.request.user.UserCreationRequest;
 import com.haidev.identityservice.dto.request.user.UserUpdateRequest;
 import com.haidev.identityservice.dto.response.UserResponse;
 import com.haidev.identityservice.entity.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -19,5 +20,4 @@ public interface UserMapper {
 
     @Mapping(source = "firstName", target = "lastName") // chỉ định chi tiết
     UserResponse toUserResponse(User user);
-
 }

@@ -1,10 +1,11 @@
 package com.haidev.identityservice.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpStatus;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
@@ -32,12 +33,9 @@ public enum ErrorCode {
 
     // OTHERS
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR),
-
     ;
 
     int code;
     String message;
     HttpStatus httpStatus;
-
-
 }

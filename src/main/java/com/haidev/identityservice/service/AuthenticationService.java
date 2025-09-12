@@ -1,5 +1,16 @@
 package com.haidev.identityservice.service;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.StringJoiner;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.haidev.identityservice.dto.request.authentication.AuthenticationRequest;
 import com.haidev.identityservice.dto.request.authentication.IntrospectRequest;
 import com.haidev.identityservice.dto.request.authentication.LogoutRequest;
@@ -17,21 +28,12 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -46,15 +48,18 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.signerKey}")
     String SIGNER_KEY;
+
     @NonFinal
     @Value("${jwt.valid-duration}")
     Long VALID_DURATION;
+
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     Long REFRESHABLE_DURATION;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var user = userRepository.findByUsername(request.getUsername())
+        var user = userRepository
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) {
@@ -63,10 +68,7 @@ public class AuthenticationService {
 
         var token = generateToken(user);
 
-        return AuthenticationResponse.builder()
-                                    .token(token)
-                                    .authenticated(true)
-                                    .build();
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
     private String generateToken(User user) {
@@ -76,17 +78,15 @@ public class AuthenticationService {
         // có thể gọi là payload thô
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
-                .issuer("haidev.com")  // định danh ai là người tạo token
+                .issuer("haidev.com") // định danh ai là người tạo token
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now()
-                                .plus(VALID_DURATION, ChronoUnit.SECONDS)
-                                .toEpochMilli()
-                ))
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
-        // từ claim set thành json object và bọc thành object Payload theo định dạng mà JWSObject yêu cầu
+        // từ claim set thành json object và bọc thành object Payload theo định dạng mà JWSObject yêu
+        // cầu
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         // Ghép Header + Payload lại thành một object chuẩn để chuẩn bị ký
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -123,12 +123,10 @@ public class AuthenticationService {
             SignedJWT signedJWT = verifyToken(token, true);
             String jit = signedJWT.getJWTClaimsSet().getJWTID();
             Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                                                                .id(jit)
-                                                                .expiredAt(expirationTime)
-                                                                .build();
+            InvalidatedToken invalidatedToken =
+                    InvalidatedToken.builder().id(jit).expiredAt(expirationTime).build();
             invalidatedRepository.save(invalidatedToken);
-        } catch (AppException e) {  // token có hết hạn hay không thì vẫn logout được
+        } catch (AppException e) { // token có hết hạn hay không thì vẫn logout được
             log.info("Token expired");
         }
     }
@@ -141,16 +139,16 @@ public class AuthenticationService {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         Date expirationTime = (isRefresh)
-                ? new Date(
-                        signedJWT.getJWTClaimsSet()
-                                .getIssueTime()
-                                .toInstant()
-                                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                                .toEpochMilli()
-                )
+                ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
-        // lấy header + payload trong JWT, chạy qua thuật toán (ví dụ HS256 = HMAC-SHA256) cùng với secret key.
-        //Sau đó so sánh kết quả hash đó với signature có sẵn trong token.
+        // lấy header + payload trong JWT, chạy qua thuật toán (ví dụ HS256 = HMAC-SHA256) cùng với
+        // secret key.
+        // Sau đó so sánh kết quả hash đó với signature có sẵn trong token.
         var verified = signedJWT.verify(verifier);
 
         if (!verified || expirationTime.before(new Date())) {
@@ -168,26 +166,20 @@ public class AuthenticationService {
         SignedJWT signedJWT = verifyToken(request.getToken(), true);
         String jit = signedJWT.getJWTClaimsSet().getJWTID();
         Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                                                            .id(jit)
-                                                            .expiredAt(expirationTime)
-                                                            .build();
+        InvalidatedToken invalidatedToken =
+                InvalidatedToken.builder().id(jit).expiredAt(expirationTime).build();
         invalidatedRepository.save(invalidatedToken);
 
         String username = signedJWT.getJWTClaimsSet().getSubject();
-        User user = userRepository.findByUsername(username)
-                                  .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user =
+                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var token = generateToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
-    public IntrospectResponse introspect(IntrospectRequest request)
-                                throws JOSEException, ParseException {
+    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         String token = request.getToken();
 
         boolean isValid = true;
@@ -196,10 +188,6 @@ public class AuthenticationService {
         } catch (AppException e) {
             isValid = false;
         }
-        return IntrospectResponse
-                .builder()
-                .isValid(isValid)
-                .build();
+        return IntrospectResponse.builder().isValid(isValid).build();
     }
-
 }

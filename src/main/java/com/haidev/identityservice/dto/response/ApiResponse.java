@@ -1,6 +1,7 @@
 package com.haidev.identityservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,10 +11,11 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiResponse <T> {
+public class ApiResponse<T> {
 
     @Builder.Default
     int code = 1000;
+
     String message;
     private T result;
 }
